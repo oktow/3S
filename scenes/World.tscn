@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://dqfwtxchqkqj5"]
+
+[ext_resource type="Script" uid="uid://bgxe514nr6pin" path="res://scripts/World.gd" id="1_f5hgt"]
+[ext_resource type="PackedScene" uid="uid://d10xijs0m73tc" path="res://scenes/room_01.tscn" id="2_1ljs6"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4djmb"]
+size = Vector3(50, 0.2, 50)
+
+[node name="World" type="Node3D" unique_id=1347217054]
+script = ExtResource("1_f5hgt")
+
+[node name="room01" parent="." unique_id=664796367 instance=ExtResource("2_1ljs6")]
+transform = Transform3D(3.6029115, 0, 0, 0, 1, 0, 0, 0, 2.3217902, 0, 0, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=510144221]
+transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, 0, 10, 0)
+light_energy = 1.0
+shadow_enabled = false
+
+[node name="Floor" type="StaticBody3D" parent="." unique_id=1383115070]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1308735691]
+shape = SubResource("BoxShape3D_4djmb")
+
+[node name="SpawnPoints" type="Node3D" parent="." unique_id=269582870]
+
+[node name="SpawnA" type="Marker3D" parent="SpawnPoints" unique_id=1269359819]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.9455624, 1.5, -6.8644505)
+
+[node name="SpawnB" type="Marker3D" parent="SpawnPoints" unique_id=1602658235]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7427864, 1.5, 6.3777866)
+
+[node name="SpawnC" type="Marker3D" parent="SpawnPoints" unique_id=1171400901]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.8238945, 1.5, 6.7427845)
+
+[node name="SpawnD" type="Marker3D" parent="SpawnPoints" unique_id=1498706253]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.22945, 1.5, -7.026673)

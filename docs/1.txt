@@ -1,0 +1,48 @@
+Membuat game PvP shooter di Godot untuk Android yang bisa dimainkan secara local offline (LAN/WiFi yang sama) adalah salah satu penggunaan paling umum dari fitur networking bawaan Godot.
+
+Godot memiliki High-Level Multiplayer API yang membuat proses ini jauh lebih mudah dibandingkan harus menulis kode jaringan dari nol. Berikut adalah gambaran cara kerjanya dan hal-hal penting yang perlu Anda perhatikan:
+
+1. Konsep Dasar (Host dan Client)
+Dalam jaringan lokal, Anda tidak memerlukan server khusus (Dedicated Server) di internet. Anda akan menggunakan model Listen Server:
+
+Satu HP Android akan menjadi "Host": HP ini bertindak sebagai Server sekaligus bermain sebagai Client.
+
+HP Android lainnya akan menjadi "Client": Mereka akan terhubung ke Local IP Address dari HP Host (misalnya 192.168.1.15).
+
+2. Fitur Kunci di Godot (Khususnya Godot 4.x)
+Jika Anda menggunakan Godot 4, proses sinkronisasi game shooter menjadi sangat rapi berkat node baru:
+
+ENetMultiplayerPeer: Ini adalah protokol standar di Godot untuk menangani koneksi (membuat server atau bergabung ke server).
+
+MultiplayerSpawner: Node ini otomatis mengatur spawn (kemunculan) dan despawn pemain atau peluru di semua perangkat yang terhubung.
+
+MultiplayerSynchronizer: Sangat krusial untuk game shooter. Node ini bertugas menyinkronkan posisi, rotasi, dan animasi karakter antar HP secara real-time dengan sangat mulus.
+
+RPC (Remote Procedure Call): Digunakan untuk mengirim sinyal instan, seperti "Pemain A menembak" atau "Pemain B terkena damage".
+
+3. Pengaturan Khusus untuk Android
+Karena Anda menargetkan perangkat Android, ada langkah ekstra saat Anda mengekspor (Export) game dari Godot ke APK/AAB:
+Anda wajib mencentang Permissions (izin) berikut di menu Export > Android:
+
+INTERNET (Meskipun mainnya offline di LAN lokal, Android tetap membutuhkan izin ini untuk membuka socket jaringan).
+
+ACCESS_NETWORK_STATE (Untuk mengecek apakah HP terhubung ke WiFi).
+
+ACCESS_WIFI_STATE
+
+4. Tantangan Utama: Menemukan IP Address (LAN Discovery)
+Masalah terbesar saat main LAN di HP adalah: Pemain pasti malas mengetik IP Address secara manual (misal harus ngetik 192.168.100.5 di layar HP).
+
+Solusi Pro-Tip: Gunakan UDP Broadcast untuk Server Discovery.
+Anda bisa memprogram gamenya agar saat Host membuat room, dia memancarkan sinyal ke seluruh jaringan WiFi ("Hei, ada room terbuka di IP ini!"). Client yang sedang di menu utama akan menangkap sinyal tersebut dan menampilkannya sebagai tombol "Join Room" yang bisa langsung ditekan tanpa harus mengetik IP.
+
+Ringkasan Alur Pembuatan:
+Buat menu utama dengan tombol Create Room (Host) dan Join Room (Client).
+
+Gunakan ENetMultiplayerPeer untuk membuka port (misal port 1024).
+
+Saat koneksi berhasil, muat scene peta permainan.
+
+Gunakan MultiplayerSpawner untuk memunculkan karakter masing-masing pemain.
+
+Gunakan MultiplayerSynchronizer pada scene karakter untuk menyinkronkan koordinat X/Y agar pergerakan terlihat oleh lawan.
