@@ -3,19 +3,23 @@ extends Node3D
 @onready var spawn_points: Node3D = $SpawnPoints
 
 var player_scene: PackedScene = preload("res://scenes/Player.tscn")
+var _gm
 
 
 func _ready() -> void:
+	_gm = get_node("/root/GameManager")
 	NetworkManager.player_connected.connect(_on_player_connected)
 	NetworkManager.player_disconnected.connect(_on_player_disconnected)
 	NetworkManager.server_disconnected.connect(_on_server_disconnected)
 
 	if multiplayer.is_server():
 		_spawn_for_peer(multiplayer.get_unique_id())
+		await get_tree().create_timer(1.0).timeout
+		_gm.start_game()
 
 
 func _spawn_for_peer(peer_id: int) -> void:
-	var spawn_pos: Vector3 = _get_spawn_point(peer_id)
+	var spawn_pos: Vector3 = get_spawn_point(peer_id)
 	_spawn_player_on_all.rpc(peer_id, spawn_pos)
 
 
@@ -28,7 +32,7 @@ func _spawn_player_on_all(peer_id: int, spawn_pos: Vector3) -> void:
 	add_child(player, true)
 
 
-func _get_spawn_point(peer_id: int) -> Vector3:
+func get_spawn_point(peer_id: int) -> Vector3:
 	var points: Array[Node] = spawn_points.get_children()
 	if points.is_empty():
 		return Vector3.ZERO

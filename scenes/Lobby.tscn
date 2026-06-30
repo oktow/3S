@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://lobby01"]
+
+[ext_resource type="Script" path="res://scripts/Lobby.gd" id="1_gd"]
+
+[node name="Lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gd")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 48
+text = "LOBBY"
+
+[node name="PlayersLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Pemain:"
+
+[node name="PlayerList" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StartBtn" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Mulai Permainan"
+
+[node name="CancelBtn" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Batal"
+
+[node name="CountdownLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+text = "Mulai dalam 10 detik..."
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Status"
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/StartBtn" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/CancelBtn" to="." method="_on_cancel_pressed"]

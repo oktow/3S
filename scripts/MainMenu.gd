@@ -1,5 +1,6 @@
 extends Control
 
+@onready var name_input: LineEdit = $TextureRect/VBoxContainer/NameInput
 @onready var ip_input: LineEdit = $TextureRect/VBoxContainer/IPInput
 @onready var status_label: Label = $TextureRect/VBoxContainer/StatusLabel
 @onready var server_list: VBoxContainer = $TextureRect/VBoxContainer/ServerListContainer/ServerList
@@ -49,11 +50,19 @@ func _add_server_to_list(ip: String) -> void:
 	server_list.add_child(btn)
 
 
+func _get_player_name() -> String:
+	var name: String = name_input.text.strip_edges()
+	if name.is_empty():
+		return "Player"
+	return name
+
+
 func _on_create_pressed() -> void:
 	status_label.text = "Hosting..."
+	NetworkManager.player_name = _get_player_name()
 	NetworkManager.host()
 	_broadcast_presence()
-	get_tree().change_scene_to_file("res://scenes/World.tscn")
+	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
 
 
 func _broadcast_presence() -> void:
@@ -71,11 +80,12 @@ func _on_join_pressed() -> void:
 
 func _join_ip(ip: String) -> void:
 	status_label.text = "Connecting to %s..." % ip
+	NetworkManager.player_name = _get_player_name()
 	NetworkManager.join(ip)
 
 
 func _on_game_started(_peer_id: int) -> void:
-	get_tree().change_scene_to_file("res://scenes/World.tscn")
+	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
 
 
 func _on_server_disconnected() -> void:

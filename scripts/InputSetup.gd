@@ -7,6 +7,7 @@ func _ready() -> void:
 	_add_key_action("move_left", KEY_A)
 	_add_key_action("move_right", KEY_D)
 	_add_key_action("reload", KEY_R)
+	_add_key_action("sprint", KEY_SHIFT)
 	_add_mouse_action("shoot", MOUSE_BUTTON_LEFT)
 
 
