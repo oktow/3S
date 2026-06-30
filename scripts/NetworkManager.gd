@@ -65,10 +65,10 @@ func _on_server_disconnected() -> void:
 	server_disconnected.emit()
 
 
-func register_player_name(pid: int, name: String) -> void:
+func register_player_name(pid: int, pname: String) -> void:
 	if not multiplayer.is_server():
 		return
-	player_names[pid] = name
+	player_names[pid] = pname
 	_broadcast_player_names.rpc(player_names)
 
 
@@ -77,10 +77,10 @@ func get_player_name(pid: int) -> String:
 
 
 @rpc("any_peer", "call_local", "reliable")
-func _receive_player_name(pid: int, name: String) -> void:
+func _receive_player_name(pid: int, pname: String) -> void:
 	if not multiplayer.is_server():
 		return
-	register_player_name(pid, name)
+	register_player_name(pid, pname)
 
 
 @rpc("authority", "call_local", "reliable")

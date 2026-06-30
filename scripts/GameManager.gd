@@ -1,6 +1,6 @@
 extends Node
 
-signal round_started(round: int)
+signal round_started(p_round: int)
 signal round_ended(scores: Dictionary)
 signal game_ended(winner_id: int, final_scores: Dictionary)
 signal time_updated(time_left: float)
@@ -128,8 +128,8 @@ func get_local_player_id() -> int:
 
 
 @rpc("authority", "call_local", "reliable")
-func _sync_round_state(round: int, time_left: float, round_scores: Dictionary) -> void:
-	current_round = round
+func _sync_round_state(p_round: int, time_left: float, round_scores: Dictionary) -> void:
+	current_round = p_round
 	round_timer = time_left
 	scores = round_scores
 	time_updated.emit(time_left)

@@ -46,11 +46,11 @@ func _refresh_player_list() -> void:
 
 	for pid in sorted_ids:
 		var label: Label = Label.new()
-		var name: String = NetworkManager.get_player_name(pid)
+		var p_name: String = NetworkManager.get_player_name(pid)
 		if pid == 1:
-			label.text = "%s (Host)" % name
+			label.text = "%s (Host)" % p_name
 		else:
-			label.text = name
+			label.text = p_name
 		player_list.add_child(label)
 
 	if sorted_ids.is_empty():
@@ -59,11 +59,11 @@ func _refresh_player_list() -> void:
 		player_list.add_child(label)
 
 
-func _on_player_joined(pid: int) -> void:
+func _on_player_joined(_pid: int) -> void:
 	_refresh_player_list()
 
 
-func _on_player_left(pid: int) -> void:
+func _on_player_left(_pid: int) -> void:
 	_refresh_player_list()
 
 

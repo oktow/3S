@@ -28,6 +28,7 @@ var bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 @onready var camera_arm: SpringArm3D = $CameraArm
 @onready var camera: Camera3D = $CameraArm/Camera3D
 @onready var anim_player: AnimationPlayer = $YBot/AnimationPlayer
+@onready var anim_tree: AnimationTree = $YBot/AnimationTree
 @onready var ybot: Node3D = $YBot
 @onready var weapon_pivot: BoneAttachment3D = $YBot/Armature/Skeleton3D/WeaponPivot
 @onready var muzzle: Marker3D = $YBot/Armature/Skeleton3D/WeaponPivot/Muzzle
@@ -36,7 +37,8 @@ var bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 @onready var hud: CanvasLayer = $HUD
 @onready var _gm = get_node("/root/GameManager")
 
-var last_anim: String = "idle"
+var last_state: int = -1
+var _reload_node: AnimationNodeAnimation
 
 
 func _ready() -> void:
@@ -46,10 +48,16 @@ func _ready() -> void:
 
 	NetworkManager.player_disconnected.connect(_on_player_left)
 
-	for name in ["idle", "strafe_right", "strafe_left", "run_forward", "walk_pistol"]:
-		var anim = anim_player.get_animation(name)
+	for anim_name in ["idle", "strafe_right", "strafe_left", "run_forward", "walk_pistol"]:
+		var anim = anim_player.get_animation(anim_name)
 		if anim:
 			anim.loop_mode = Animation.LOOP_LINEAR
+
+	var reload_anim = anim_player.get_animation("reload")
+	if reload_anim:
+		reload_anim.loop_mode = Animation.LOOP_NONE
+
+	_setup_animation_tree()
 
 	syncer.set_process(false)
 	await get_tree().process_frame
@@ -60,6 +68,61 @@ func _ready() -> void:
 			NetworkManager.register_player_name(multiplayer.get_unique_id(), NetworkManager.player_name)
 		else:
 			NetworkManager._receive_player_name.rpc_id(1, multiplayer.get_unique_id(), NetworkManager.player_name)
+
+
+func _setup_animation_tree() -> void:
+	var tree: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
+	
+	var transition: AnimationNodeTransition = AnimationNodeTransition.new()
+	transition.input_count = 5
+	transition.xfade_time = 0.2
+	
+	var animations = ["idle", "strafe_right", "strafe_left", "run_forward", "walk_pistol"]
+	for i in range(animations.size()):
+		var anim_node = AnimationNodeAnimation.new()
+		anim_node.animation = animations[i]
+		tree.add_node(animations[i], anim_node, Vector2(-400, i * 100))
+	
+	_reload_node = AnimationNodeAnimation.new()
+	_reload_node.animation = "reload"
+	tree.add_node("reload", _reload_node, Vector2(0, 200))
+	
+	var blend_node := AnimationNodeBlend2.new()
+	blend_node.filter_enabled = true
+	
+	var upper_bones := {
+		"mixamorig_Spine": true, "mixamorig_Spine1": true, "mixamorig_Spine2": true,
+		"mixamorig_Neck": true, "mixamorig_Head": true, "mixamorig_HeadTop_End": true,
+		"mixamorig_LeftShoulder": true, "mixamorig_RightShoulder": true,
+		"mixamorig_LeftArm": true, "mixamorig_RightArm": true,
+		"mixamorig_LeftForeArm": true, "mixamorig_RightForeArm": true,
+		"mixamorig_LeftHand": true, "mixamorig_RightHand": true,
+	}
+	for hand in ["Left", "Right"]:
+		for finger in ["Thumb", "Index", "Middle", "Ring", "Pinky"]:
+			for i in range(1, 5):
+				upper_bones["mixamorig_%sHand%s%d" % [hand, finger, i]] = true
+	
+	var reload_anim := anim_player.get_animation("reload")
+	for i in reload_anim.get_track_count():
+		var path := reload_anim.track_get_path(i)
+		var sub := path.get_concatenated_subnames()
+		if sub in upper_bones:
+			blend_node.set_filter_path(path, true)
+	
+	tree.add_node("state", transition, Vector2(-50, 50))
+	tree.add_node("blend", blend_node, Vector2(200, 100))
+	
+	for i in range(animations.size()):
+		tree.connect_node("state", i, animations[i])
+	
+	tree.connect_node("blend", 0, "state")
+	tree.connect_node("blend", 1, "reload")
+	tree.connect_node("output", 0, "blend")
+	
+	anim_tree.anim_player = anim_player.get_path()
+	anim_tree.tree_root = tree
+	anim_tree.active = true
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -123,24 +186,21 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_animation(input_dir: Vector2, is_running: bool) -> void:
-	if is_reloading:
-		return
-
-	var target_anim = "idle"
-
+	var target_state: int = 0 # idle
+	
 	if input_dir.length() > 0.1:
 		if input_dir.x > 0.5:
-			target_anim = "strafe_right"
+			target_state = 1 # strafe_right
 		elif input_dir.x < -0.5:
-			target_anim = "strafe_left"
+			target_state = 2 # strafe_left
 		elif is_running:
-			target_anim = "run_forward"
+			target_state = 3 # run_forward
 		else:
-			target_anim = "walk_pistol"
-
-	if target_anim != last_anim:
-		anim_player.play(target_anim, 0.15)
-		last_anim = target_anim
+			target_state = 4 # walk_pistol
+	
+	if target_state != last_state:
+		anim_tree["parameters/state/transition_request"] = "state_" + str(target_state)
+		last_state = target_state
 
 
 func _shoot_local() -> void:
@@ -167,10 +227,14 @@ func _start_reload() -> void:
 	reloads_used += 1
 	reloads_changed.emit(reloads_used)
 	reloading_changed.emit(true)
-	anim_player.play("reload")
-	last_anim = "reload"
+
+	_reload_node.animation = ""
+	_reload_node.animation = "reload"
+	anim_tree["parameters/blend/blend_amount"] = 1.0
 
 	await get_tree().create_timer(RELOAD_TIME).timeout
+
+	anim_tree["parameters/blend/blend_amount"] = 0.0
 
 	ammo = MAX_AMMO
 	is_reloading = false

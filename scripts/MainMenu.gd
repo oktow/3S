@@ -51,10 +51,10 @@ func _add_server_to_list(ip: String) -> void:
 
 
 func _get_player_name() -> String:
-	var name: String = name_input.text.strip_edges()
-	if name.is_empty():
+	var p_name: String = name_input.text.strip_edges()
+	if p_name.is_empty():
 		return "Player"
-	return name
+	return p_name
 
 
 func _on_create_pressed() -> void:
