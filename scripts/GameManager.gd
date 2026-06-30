@@ -26,6 +26,28 @@ func _ready() -> void:
 	_timer.wait_time = 1.0
 	_timer.timeout.connect(_on_timer_tick)
 	add_child(_timer)
+	
+	if NetworkManager:
+		NetworkManager.server_disconnected.connect(_on_network_disconnected)
+		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+
+
+func _on_network_disconnected() -> void:
+	_reset_game_state()
+
+
+func _on_peer_disconnected(_pid: int) -> void:
+	if multiplayer.multiplayer_peer == null:
+		_reset_game_state()
+
+
+func _reset_game_state() -> void:
+	game_active = false
+	round_active = false
+	_timer.stop()
+	scores.clear()
+	current_round = 0
+
 
 
 func start_game() -> void:
@@ -38,6 +60,8 @@ func start_game() -> void:
 
 
 func _start_next_round() -> void:
+	if multiplayer.multiplayer_peer == null:
+		return
 	current_round += 1
 	round_timer = ROUND_DURATION
 	round_active = true
@@ -55,7 +79,7 @@ func _start_next_round() -> void:
 
 
 func register_kill(killer_id: int, victim_id: int) -> void:
-	if not multiplayer.is_server() or not round_active:
+	if multiplayer.multiplayer_peer == null or not multiplayer.is_server() or not round_active:
 		return
 	if killer_id == victim_id:
 		return
@@ -80,7 +104,7 @@ func _check_round_end() -> void:
 
 
 func _on_timer_tick() -> void:
-	if not round_active:
+	if not round_active or multiplayer.multiplayer_peer == null:
 		return
 	round_timer -= 1.0
 	_sync_round_state.rpc(current_round, round_timer, scores)

@@ -93,9 +93,9 @@ func _on_died() -> void:
 
 
 func _on_time_updated(time_left: float) -> void:
-	var seconds: int = int(time_left)
-	var mins: int = seconds / 60
-	var secs: int = seconds % 60
+	var total_seconds: int = int(time_left)
+	var mins: int = int(total_seconds / 60.0)
+	var secs: int = total_seconds % 60
 	timer_label.text = "%02d:%02d" % [mins, secs]
 
 
@@ -106,7 +106,7 @@ func _on_scores_updated(scores: Dictionary) -> void:
 
 
 func _on_round_started(p_round: int) -> void:
-	round_label.text = "Round %d/%d" % [round, _gm.MAX_ROUNDS]
+	round_label.text = "Round %d/%d" % [p_round, _gm.MAX_ROUNDS]
 	round_end_screen.visible = false
 	game_over_screen.visible = false
 

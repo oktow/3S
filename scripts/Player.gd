@@ -6,7 +6,6 @@ signal health_changed(new_health: int)
 signal ammo_changed(new_ammo: int)
 signal reloading_changed(is_reloading: bool)
 signal reloads_changed(count: int)
-signal kills_changed(count: int)
 
 const SPEED: float = 5.0
 const RUN_SPEED: float = 8.0
