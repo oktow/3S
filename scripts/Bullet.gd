@@ -36,6 +36,11 @@ func _hit(node: Node) -> void:
 		queue_free()
 		return
 
+	if node.is_in_group("enemy"):
+		node.take_damage(DAMAGE, shooter_id)
+		queue_free()
+		return
+
 	if node.get_multiplayer_authority() == shooter_id:
 		return
 

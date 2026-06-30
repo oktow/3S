@@ -33,6 +33,7 @@ var bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 @onready var muzzle: Marker3D = $YBot/Armature/Skeleton3D/WeaponPivot/Muzzle
 @onready var audio_stream_player: AudioStreamPlayer = $AudioStreamPlayer
 @onready var syncer: MultiplayerSynchronizer = $MultiplayerSynchronizer
+@onready var hud: CanvasLayer = $HUD
 @onready var _gm = get_node("/root/GameManager")
 
 var last_anim: String = "idle"
@@ -44,6 +45,11 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	NetworkManager.player_disconnected.connect(_on_player_left)
+
+	for name in ["idle", "strafe_right", "strafe_left", "run_forward", "walk_pistol"]:
+		var anim = anim_player.get_animation(name)
+		if anim:
+			anim.loop_mode = Animation.LOOP_LINEAR
 
 	syncer.set_process(false)
 	await get_tree().process_frame
@@ -60,13 +66,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_multiplayer_authority():
 		return
 
+	if hud.pause_menu.visible:
+		return
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
 		camera_arm.rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
 		camera_arm.rotation.x = clamp(camera_arm.rotation.x, -deg_to_rad(60), deg_to_rad(60))
 
 	if event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		hud.toggle_pause()
 
 	if event.is_action_pressed("reload"):
 		_start_reload()
@@ -74,6 +83,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	if not is_multiplayer_authority() or is_dead:
+		return
+
+	if hud.pause_menu.visible:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.z = move_toward(velocity.z, 0, SPEED)
+		move_and_slide()
 		return
 
 	var input_dir: Vector2 = Vector2.ZERO
@@ -92,8 +107,7 @@ func _physics_process(delta: float) -> void:
 			direction = direction.normalized()
 			velocity.x = direction.x * speed
 			velocity.z = direction.z * speed
-		var target_angle = atan2(direction.x, direction.z)
-		rotation.y = lerp_angle(rotation.y, target_angle, 10.0 * delta)
+		
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)
@@ -171,7 +185,9 @@ func _spawn_bullet() -> void:
 	var space_state = get_world_3d().direct_space_state
 	var cam_pos = camera.global_position
 	var cam_fwd = -camera.global_basis.z
-	var hit = space_state.intersect_ray(PhysicsRayQueryParameters3D.create(cam_pos, cam_pos + cam_fwd * 1000.0))
+	var query = PhysicsRayQueryParameters3D.create(cam_pos, cam_pos + cam_fwd * 1000.0)
+	query.exclude = [self]
+	var hit = space_state.intersect_ray(query)
 	var target = hit.position if hit else cam_pos + cam_fwd * 1000.0
 	bullet.direction = (target - muzzle.global_position).normalized()
 	bullet.position = muzzle.global_position

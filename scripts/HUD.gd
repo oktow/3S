@@ -15,10 +15,13 @@ extends CanvasLayer
 @onready var game_over_label: Label = $GameOverScreen/GameOverLabel
 @onready var winner_label: Label = $GameOverScreen/WinnerLabel
 @onready var final_scores_label: Label = $GameOverScreen/FinalScoresLabel
+@onready var pause_menu: Control = $PauseMenu
 @onready var _gm = get_node("/root/GameManager")
 
 
 func _ready() -> void:
+	$PauseMenu/VBoxContainer/ResumeBtn.pressed.connect(_on_resume_pressed)
+	$PauseMenu/VBoxContainer/ExitBtn.pressed.connect(_on_exit_pressed)
 	var player: Node = get_parent()
 	if player.has_signal("health_changed"):
 		player.health_changed.connect(_update_health)
@@ -137,3 +140,18 @@ func _on_game_ended(winner_id: int, final_scores: Dictionary) -> void:
 	if score_text.is_empty():
 		score_text = "Tidak ada kill"
 	final_scores_label.text = score_text
+
+
+func toggle_pause() -> void:
+	pause_menu.visible = not pause_menu.visible
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if pause_menu.visible else Input.MOUSE_MODE_CAPTURED
+
+
+func _on_resume_pressed() -> void:
+	pause_menu.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_exit_pressed() -> void:
+	NetworkManager.disconnect_from_server()
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")

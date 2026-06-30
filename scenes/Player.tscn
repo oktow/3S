@@ -18,7 +18,7 @@ script = ExtResource("1_cp7f5")
 shape = SubResource("CapsuleShape3D_y5cb2")
 
 [node name="YBot" parent="." instance=ExtResource("3_y7n1b")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.85, 0)
 
 [node name="WeaponPivot" type="BoneAttachment3D" parent="YBot/Armature/Skeleton3D"]
 bone_name = "mixamorig_RightHand"
@@ -268,3 +268,48 @@ grow_vertical = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Final Scores..."
+
+[node name="PauseMenu" type="Control" parent="HUD"]
+visible = false
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Background" type="ColorRect" parent="HUD/PauseMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.5)
+mouse_filter = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/PauseMenu"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -75.0
+offset_right = 100.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="PauseLabel" type="Label" parent="HUD/PauseMenu/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 36
+text = "PAUSED"
+
+[node name="ResumeBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer"]
+layout_mode = 2
+text = "Resume"
+
+[node name="ExitBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer"]
+layout_mode = 2
+text = "Exit to Menu"

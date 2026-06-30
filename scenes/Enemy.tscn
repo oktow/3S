@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5t6m8m8n7h6"]
+
+[ext_resource type="Script" path="res://scripts/Enemy.gd" id="1_e7uyj"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_f3cvs"]
+radius = 0.5
+height = 2.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_yg1lk"]
+radius = 0.5
+mid_height = 1.0
+
+[node name="Enemy" type="StaticBody3D"]
+script = ExtResource("1_e7uyj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_f3cvs")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_yg1lk")
+
+[node name="HealthLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+text = "Enemy: 100/100 HP"
