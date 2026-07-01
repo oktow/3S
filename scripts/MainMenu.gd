@@ -2,6 +2,7 @@ extends Control
 
 @onready var name_input: LineEdit = $TextureRect/VBoxContainer/NameInput
 @onready var ip_input: LineEdit = $TextureRect/VBoxContainer/IPInput
+@onready var ip_label: Label = $TextureRect/VBoxContainer/IPLabel
 @onready var status_label: Label = $TextureRect/VBoxContainer/StatusLabel
 @onready var server_list: VBoxContainer = $TextureRect/VBoxContainer/ServerListContainer/ServerList
 @onready var refresh_timer: Timer = $RefreshTimer
@@ -18,6 +19,7 @@ func _ready() -> void:
 	udp_broadcaster.set_dest_address("255.255.255.255", NetworkManager.DISCOVERY_PORT)
 
 	start_listening_for_broadcasts()
+	ip_label.text = "IP Anda: %s" % _get_local_ip()
 
 
 func start_listening_for_broadcasts() -> void:
@@ -50,11 +52,53 @@ func _add_server_to_list(ip: String) -> void:
 	server_list.add_child(btn)
 
 
+func _get_local_ip() -> String:
+	var interfaces: Array = IP.get_local_interfaces()
+	var candidates: Array[String] = []
+
+	for iface in interfaces:
+		var friendly: String = iface.get("friendly", "").to_lower()
+		var iface_name: String = iface.get("name", "").to_lower()
+		var combined: String = friendly + " " + iface_name
+
+		# Skip adapter virtual / VPN
+		if "virtual" in combined or "vmware" in combined or "virtualbox" in combined:
+			continue
+		if "docker" in combined or "tailscale" in combined or "vEthernet" in combined:
+			continue
+		if "bluetooth" in combined or "loopback" in combined or "localhost" in combined:
+			continue
+		if "pbl" in combined or "isatap" in combined or "teredo" in combined:
+			continue
+
+		# Ambil IPv4 dari interface ini
+		for addr: String in iface["addresses"]:
+			if addr.begins_with("127.") or addr.begins_with("169.254."):
+				continue
+			if "." in addr:
+				candidates.append(addr)
+
+	if not candidates.is_empty():
+		return candidates[0]
+
+	# Fallback: ambil IPv4 pertama yg bukan loopback
+	for addr: String in IP.get_local_addresses():
+		if addr.begins_with("127."):
+			continue
+		if "." in addr:
+			return addr
+	return "Tidak diketahui"
+
+
 func _get_player_name() -> String:
 	var p_name: String = name_input.text.strip_edges()
 	if p_name.is_empty():
 		return "Player"
 	return p_name
+
+
+func _on_edit_character_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/PlayerEditor.tscn")
 
 
 func _on_create_pressed() -> void:

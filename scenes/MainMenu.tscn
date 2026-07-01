@@ -54,6 +54,13 @@ text = "Create Room (Host)"
 layout_mode = 2
 placeholder_text = "IP Address (contoh: 192.168.1.15)"
 
+[node name="IPLabel" type="Label" parent="TextureRect/VBoxContainer" unique_id=1600000001]
+layout_mode = 2
+
+[node name="EditCharBtn" type="Button" parent="TextureRect/VBoxContainer" unique_id=1113538214]
+layout_mode = 2
+text = "Edit Karakter"
+
 [node name="JoinBtn" type="Button" parent="TextureRect/VBoxContainer" unique_id=1585662878]
 layout_mode = 2
 text = "Join Room"
@@ -83,6 +90,7 @@ wait_time = 2.0
 one_shot = true
 
 [connection signal="pressed" from="TextureRect/VBoxContainer/CreateBtn" to="." method="_on_create_pressed"]
+[connection signal="pressed" from="TextureRect/VBoxContainer/EditCharBtn" to="." method="_on_edit_character_pressed"]
 [connection signal="pressed" from="TextureRect/VBoxContainer/JoinBtn" to="." method="_on_join_pressed"]
 [connection signal="pressed" from="TextureRect/VBoxContainer/RefreshBtn" to="." method="_on_refresh_pressed"]
 [connection signal="timeout" from="RefreshTimer" to="." method="_on_refresh_timer_timeout"]
