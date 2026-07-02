@@ -16,6 +16,10 @@ var round_timer: float = 0.0
 var game_active: bool = false
 var round_active: bool = false
 
+# Character customization — dipilih dari PlayerEditor
+var selected_hat: int = 1  # 0=tidak ada, 1=cowboy, 2=top hat
+var selected_weapon: int = 1  # 0=tidak ada, 1=pistol
+
 var _timer: Timer
 var _alive_players: Dictionary = {}
 

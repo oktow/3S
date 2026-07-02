@@ -29,9 +29,9 @@ var bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 @onready var anim_player: AnimationPlayer = $YBot/AnimationPlayer
 @onready var anim_tree: AnimationTree = $YBot/AnimationTree
 @onready var ybot: Node3D = $YBot
-@onready var weapon_pivot: BoneAttachment3D = $YBot/Armature/Skeleton3D/WeaponPivot
-@onready var muzzle: Marker3D = $YBot/Armature/Skeleton3D/WeaponPivot/Muzzle
+var muzzle: Marker3D
 @onready var audio_stream_player: AudioStreamPlayer = $AudioStreamPlayer
+var shoot_sound: AudioStreamWAV = preload("res://assets/sound/pistol-gunshot.wav")
 @onready var syncer: MultiplayerSynchronizer = $MultiplayerSynchronizer
 @onready var hud: CanvasLayer = $HUD
 @onready var _gm = get_node("/root/GameManager")
@@ -39,8 +39,28 @@ var bullet_scene: PackedScene = preload("res://scenes/Bullet.tscn")
 var last_state: int = -1
 var _reload_node: AnimationNodeAnimation
 
+# Editor mode — when instanced in PlayerEditor for preview, skips gameplay logic
+@export var editor_mode: bool = false
+
+# Exposed for PlayerEditor to toggle visibility
+var hat_node: Node3D
+var hat_tophat_node: Node3D
+var weapon_node: Node3D
+
 
 func _ready() -> void:
+	if editor_mode:
+		hud.visible = false
+		camera.current = false
+		_setup_hat()
+		_setup_weapon()
+		if anim_player.has_animation("idle"):
+			anim_player.play("idle")
+		return
+
+	# Assign sound
+	audio_stream_player.stream = shoot_sound
+
 	if is_multiplayer_authority():
 		camera.current = true
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -57,6 +77,9 @@ func _ready() -> void:
 		reload_anim.loop_mode = Animation.LOOP_NONE
 
 	_setup_animation_tree()
+	_setup_hat()
+	_setup_weapon()
+	_apply_saved_customization()
 
 	syncer.set_process(false)
 	await get_tree().process_frame
@@ -124,8 +147,70 @@ func _setup_animation_tree() -> void:
 	anim_tree.active = true
 
 
+func _setup_hat() -> void:
+	var skel: Skeleton3D = $YBot/Armature/Skeleton3D
+	
+	var attach := BoneAttachment3D.new()
+	attach.name = "HatBoneAttachment"
+	attach.bone_name = "mixamorig_Head"
+	skel.add_child(attach)
+	
+	# Reparent all hat meshes to the bone attachment
+	for child in $YBot.get_children():
+		if child is Node3D and (child.name == "Hat" or child.name == "HtopHat"):
+			child.reparent(attach, true)
+			match child.name:
+				"Hat":
+					hat_node = child
+				"HtopHat":
+					hat_tophat_node = child
+
+
+func _setup_weapon() -> void:
+	var weapon: Node3D = $YBot/Weapon
+	var skel: Skeleton3D = $YBot/Armature/Skeleton3D
+
+	var attach := BoneAttachment3D.new()
+	attach.name = "WeaponBoneAttachment"
+	attach.bone_name = "mixamorig_RightHand"
+	skel.add_child(attach)
+
+	weapon.reparent(attach, true)
+	weapon_node = weapon
+
+	muzzle = Marker3D.new()
+	muzzle.name = "Muzzle"
+	attach.add_child(muzzle)
+
+
+func _apply_saved_customization() -> void:
+	var gm = get_node("/root/GameManager")
+	if not gm:
+		return
+
+	# Sembunyikan semua topi dulu
+	if is_instance_valid(hat_node):
+		hat_node.visible = false
+	if is_instance_valid(hat_tophat_node):
+		hat_tophat_node.visible = false
+
+	# Tampilkan topi yang dipilih
+	match gm.selected_hat:
+		1:  # Cowboy
+			if is_instance_valid(hat_node):
+				hat_node.visible = true
+		2:  # Top Hat
+			if is_instance_valid(hat_tophat_node):
+				hat_tophat_node.visible = true
+		# 0 = tanpa topi, semua tetap tersembunyi
+
+	# Atur visibilitas senjata
+	if is_instance_valid(weapon_node):
+		weapon_node.visible = (gm.selected_weapon == 1)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if not is_multiplayer_authority():
+	if editor_mode or not is_multiplayer_authority():
 		return
 
 	if hud.pause_menu.visible:
@@ -144,7 +229,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not is_multiplayer_authority() or is_dead:
+	if editor_mode or not is_multiplayer_authority() or is_dead:
 		return
 
 	if hud.pause_menu.visible:
@@ -212,8 +297,8 @@ func _shoot_local() -> void:
 	if ammo == 0:
 		_start_reload()
 
-	if not audio_stream_player.playing:
-		audio_stream_player.play()
+	audio_stream_player.stop()
+	audio_stream_player.play()
 
 	_spawn_bullet()
 
@@ -227,18 +312,20 @@ func _start_reload() -> void:
 	reloads_changed.emit(reloads_used)
 	reloading_changed.emit(true)
 
+	# Reset and play reload animation, then blend it in (upper body only)
 	_reload_node.animation = ""
 	_reload_node.animation = "reload"
 	anim_tree["parameters/blend/blend_amount"] = 1.0
 
 	await get_tree().create_timer(RELOAD_TIME).timeout
 
-	anim_tree["parameters/blend/blend_amount"] = 0.0
-
-	ammo = MAX_AMMO
-	is_reloading = false
-	ammo_changed.emit(ammo)
-	reloading_changed.emit(false)
+	# Only complete if we're still reloading (not interrupted by death/round reset)
+	if is_reloading:
+		ammo = MAX_AMMO
+		is_reloading = false
+		anim_tree["parameters/blend/blend_amount"] = 0.0
+		ammo_changed.emit(ammo)
+		reloading_changed.emit(false)
 
 
 func _spawn_bullet() -> void:
@@ -285,6 +372,7 @@ func reset_for_new_round() -> void:
 	is_dead = false
 	is_reloading = false
 	reloads_used = 0
+	anim_tree["parameters/blend/blend_amount"] = 0.0
 	show()
 
 	health_changed.emit(health)

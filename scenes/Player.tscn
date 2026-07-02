@@ -1,55 +1,56 @@
-[gd_scene load_steps=5 format=3 uid="uid://bvl20jgq6b5tv"]
+[gd_scene format=3 uid="uid://bvl20jgq6b5tv"]
 
-[ext_resource type="Script" path="res://scripts/Player.gd" id="1_cp7f5"]
-[ext_resource type="Script" path="res://scripts/HUD.gd" id="2_v8biv"]
-[ext_resource uid="uid://ghao32nobq8x" type="PackedScene" path="res://.godot/imported/ybot.glb-7955b9b8c46230d76f94534e6de29804.scn" id="3_y7n1b"]
-[ext_resource type="Script" path="res://scripts/Crosshair.gd" id="4_0w7n8"]
+[ext_resource type="Script" uid="uid://beocctx4t82au" path="res://scripts/Player.gd" id="1_cp7f5"]
+[ext_resource type="Script" uid="uid://bm2bdybdtrtvc" path="res://scripts/HUD.gd" id="2_v8biv"]
+[ext_resource type="PackedScene" uid="uid://ghao32nobq8x" path="res://assets/3d/ybot.glb" id="3_y7n1b"]
+[ext_resource type="Script" uid="uid://bjm768rruh5xe" path="res://scripts/Crosshair.gd" id="4_0w7n8"]
+[ext_resource type="PackedScene" uid="uid://3emsdph316j" path="res://assets/3d/cowboyhat.glb" id="5_6vdwi"]
+[ext_resource type="PackedScene" uid="uid://dmr2iccy5rs8m" path="res://assets/3d/Pistol_1.glb" id="6_pistol"]
+[ext_resource type="PackedScene" uid="uid://qjgwkvuhgmc1" path="res://assets/3d/HtopHat.glb" id="7_htophat"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_y5cb2"]
 radius = 0.4
 height = 1.6
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_7sqga"]
-radius = 0.15
-
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=765278102]
 script = ExtResource("1_cp7f5")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=445534223]
 shape = SubResource("CapsuleShape3D_y5cb2")
 
-[node name="YBot" parent="." instance=ExtResource("3_y7n1b")]
+[node name="YBot" parent="." unique_id=363201269 instance=ExtResource("3_y7n1b")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.85, 0)
 
-[node name="AnimationTree" type="AnimationTree" parent="YBot"]
-anim_player = NodePath("YBot/AnimationPlayer")
+[node name="Hat" parent="YBot" unique_id=30550987 instance=ExtResource("5_6vdwi")]
+transform = Transform3D(0.73, 0, 0, 0, 0.73, 0, 0, 0, 0.73, 0.00085901364, 1.7111132, 0.0014051533)
+
+[node name="HtopHat" parent="YBot" unique_id=1055328116 instance=ExtResource("7_htophat")]
+transform = Transform3D(0.73, 0, 0, 0, 0.73, 0, 0, 0, 0.73, 0.000859, 1.711113, 0.001405)
+visible = false
+
+[node name="AnimationTree" type="AnimationTree" parent="YBot" unique_id=498686459]
 active = false
+anim_player = NodePath("YBot/AnimationPlayer")
 
-[node name="WeaponPivot" type="BoneAttachment3D" parent="YBot/Armature/Skeleton3D"]
-bone_name = "mixamorig_RightHand"
+[node name="Weapon" parent="YBot" unique_id=100000001 instance=ExtResource("6_pistol")]
+transform = Transform3D(0.09760828, -3.923606e-08, -0.99522465, -0.99522465, -4.7769248e-08, -0.09760827, -4.3711374e-08, 0.9999999, -4.3711378e-08, -0.82719433, 1.3924966, -0.068483695)
 
-[node name="Muzzle" type="Marker3D" parent="YBot/Armature/Skeleton3D/WeaponPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.05, 0)
-
-[node name="CameraArm" type="SpringArm3D" parent="."]
+[node name="CameraArm" type="SpringArm3D" parent="." unique_id=1490823972]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 spring_length = 3.0
 margin = 0.2
-collision_mask = 1
 
-[node name="Camera3D" type="Camera3D" parent="CameraArm"]
-current = false
+[node name="Camera3D" type="Camera3D" parent="CameraArm" unique_id=1380686566]
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=814963516]
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-public_visibility = true
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=2044493896]
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=656027375]
 script = ExtResource("2_v8biv")
 
-[node name="Crosshair" type="Control" parent="HUD"]
-script = ExtResource("4_0w7n8")
+[node name="Crosshair" type="Control" parent="HUD" unique_id=1255299015]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -59,39 +60,39 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-custom_minimum_size = Vector2(64, 64)
+script = ExtResource("4_0w7n8")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD"]
-anchors_preset = 0
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD" unique_id=102657718]
 offset_left = 10.0
 offset_top = 10.0
 
-[node name="HealthLabel" type="Label" parent="HUD/VBoxContainer"]
+[node name="HealthLabel" type="Label" parent="HUD/VBoxContainer" unique_id=946843283]
 layout_mode = 2
 text = "HP: 100/100"
 
-[node name="AmmoLabel" type="Label" parent="HUD/VBoxContainer"]
+[node name="AmmoLabel" type="Label" parent="HUD/VBoxContainer" unique_id=932534243]
 layout_mode = 2
 text = "Ammo: 6/6"
 
-[node name="KillFeed" type="VBoxContainer" parent="HUD/VBoxContainer"]
+[node name="KillFeed" type="VBoxContainer" parent="HUD/VBoxContainer" unique_id=1478822223]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ReloadLabel" type="Label" parent="HUD/VBoxContainer"]
+[node name="ReloadLabel" type="Label" parent="HUD/VBoxContainer" unique_id=1168562158]
 layout_mode = 2
 text = "Reloads: 0/5"
 
-[node name="DeathScreen" type="Control" parent="HUD"]
+[node name="DeathScreen" type="Control" parent="HUD" unique_id=801870072]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-visible = false
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="DeathLabel" type="Label" parent="HUD/DeathScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="DeathLabel" type="Label" parent="HUD/DeathScreen" unique_id=1311040038]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -102,51 +103,48 @@ offset_right = 100.0
 offset_bottom = 25.0
 grow_horizontal = 2
 grow_vertical = 2
-horizontal_alignment = 1
-vertical_alignment = 1
 theme_override_font_sizes/font_size = 48
 text = "KAMU MATI"
-
-[node name="TopCenterContainer" type="VBoxContainer" parent="HUD"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 0.5
-anchor_top = 0.0
-anchor_right = 0.5
-anchor_bottom = 0.0
-grow_horizontal = 2
-offset_top = 10.0
-offset_left = -150.0
-offset_right = 150.0
-mouse_filter = 1
-
-[node name="TimerLabel" type="Label" parent="HUD/TopCenterContainer"]
-layout_mode = 2
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopCenterContainer" type="VBoxContainer" parent="HUD" unique_id=1238811058]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 10.0
+offset_right = 150.0
+grow_horizontal = 2
+
+[node name="TimerLabel" type="Label" parent="HUD/TopCenterContainer" unique_id=383584555]
+layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "03:00"
-
-[node name="RoundLabel" type="Label" parent="HUD/TopCenterContainer"]
-layout_mode = 2
 horizontal_alignment = 1
+
+[node name="RoundLabel" type="Label" parent="HUD/TopCenterContainer" unique_id=1231200146]
+layout_mode = 2
 text = "Round 0/3"
-
-[node name="KillLabel" type="Label" parent="HUD/TopCenterContainer"]
-layout_mode = 2
 horizontal_alignment = 1
-text = "Kills: 0"
 
-[node name="RoundEndScreen" type="Control" parent="HUD"]
+[node name="KillLabel" type="Label" parent="HUD/TopCenterContainer" unique_id=770774461]
+layout_mode = 2
+text = "Kills: 0"
+horizontal_alignment = 1
+
+[node name="RoundEndScreen" type="Control" parent="HUD" unique_id=1359472593]
 visible = false
-mouse_filter = 1
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
 
-[node name="RoundEndLabel" type="Label" parent="HUD/RoundEndScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="RoundEndLabel" type="Label" parent="HUD/RoundEndScreen" unique_id=528911188]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.4
 anchor_right = 0.5
@@ -157,14 +155,13 @@ offset_right = 200.0
 offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
-horizontal_alignment = 1
-vertical_alignment = 1
 theme_override_font_sizes/font_size = 36
 text = "Round 0 Selesai!"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="RoundScoresLabel" type="Label" parent="HUD/RoundEndScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="RoundScoresLabel" type="Label" parent="HUD/RoundEndScreen" unique_id=792005856]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -175,21 +172,22 @@ offset_right = 200.0
 offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 2
+text = "Scores..."
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "Scores..."
 
-[node name="GameOverScreen" type="Control" parent="HUD"]
+[node name="GameOverScreen" type="Control" parent="HUD" unique_id=1508081078]
 visible = false
-mouse_filter = 1
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
 
-[node name="GameOverLabel" type="Label" parent="HUD/GameOverScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="GameOverLabel" type="Label" parent="HUD/GameOverScreen" unique_id=1515215210]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.3
 anchor_right = 0.5
@@ -200,14 +198,13 @@ offset_right = 200.0
 offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
-horizontal_alignment = 1
-vertical_alignment = 1
 theme_override_font_sizes/font_size = 48
 text = "Permainan Selesai!"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="WinnerLabel" type="Label" parent="HUD/GameOverScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="WinnerLabel" type="Label" parent="HUD/GameOverScreen" unique_id=789075075]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.4
 anchor_right = 0.5
@@ -218,47 +215,47 @@ offset_right = 200.0
 offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
-horizontal_alignment = 1
-vertical_alignment = 1
 theme_override_font_sizes/font_size = 32
 text = "Pemenang: Player ?"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="FinalScoresLabel" type="Label" parent="HUD/GameOverScreen"]
-layout_mode = 1
-anchors_preset = 8
+[node name="FinalScoresLabel" type="Label" parent="HUD/GameOverScreen" unique_id=1784395064]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 0.0
 offset_right = 200.0
 offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
+text = "Final Scores..."
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "Final Scores..."
 
-[node name="PauseMenu" type="Control" parent="HUD"]
+[node name="PauseMenu" type="Control" parent="HUD" unique_id=1758230624]
 visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
 
-[node name="Background" type="ColorRect" parent="HUD/PauseMenu"]
-layout_mode = 1
-anchors_preset = 15
+[node name="Background" type="ColorRect" parent="HUD/PauseMenu" unique_id=1311832439]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.5)
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 1
+color = Color(0, 0, 0, 0.5)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUD/PauseMenu"]
-layout_mode = 1
-anchors_preset = 8
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/PauseMenu" unique_id=836334819]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -271,20 +268,24 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 15
 
-[node name="PauseLabel" type="Label" parent="HUD/PauseMenu/VBoxContainer"]
+[node name="PauseLabel" type="Label" parent="HUD/PauseMenu/VBoxContainer" unique_id=1442399746]
 layout_mode = 2
-horizontal_alignment = 1
 theme_override_font_sizes/font_size = 36
 text = "PAUSED"
+horizontal_alignment = 1
 
-[node name="ResumeBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer"]
+[node name="ResumeBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer" unique_id=148196905]
 layout_mode = 2
 text = "Resume"
 
-[node name="CrosshairBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer"]
+[node name="CrosshairBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer" unique_id=83982641]
 layout_mode = 2
 text = "Crosshair"
 
-[node name="ExitBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer"]
+[node name="ExitBtn" type="Button" parent="HUD/PauseMenu/VBoxContainer" unique_id=998389939]
 layout_mode = 2
 text = "Exit to Menu"
+
+[connection signal="pressed" from="HUD/PauseMenu/VBoxContainer/ResumeBtn" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="HUD/PauseMenu/VBoxContainer/CrosshairBtn" to="." method="_on_crosshair_pressed"]
+[connection signal="pressed" from="HUD/PauseMenu/VBoxContainer/ExitBtn" to="." method="_on_exit_pressed"]
